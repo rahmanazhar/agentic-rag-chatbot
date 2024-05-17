@@ -1,4 +1,5 @@
 Flask
+Flask-CORS
 langchain
 ollama
 qdrant-client
