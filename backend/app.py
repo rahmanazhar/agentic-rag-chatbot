@@ -4,15 +4,17 @@ from langchain.llms import Ollama
 from qdrant_client import QdrantClient
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS
-ollama = Ollama()
+CORS(app)  
+
+ollama = Ollama(base_url='http://ollama:11434')  
+
 qdrant_client = QdrantClient(host='db', port=6333)
 
 @app.route('/chat', methods=['POST'])
 def chat():
     data = request.json
     message = data['message']
-    response = ollama.generate(message)
+    response = ollama.generate([message]) 
     return jsonify({'response': response})
 
 if __name__ == '__main__':

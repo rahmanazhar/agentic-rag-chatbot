@@ -12,7 +12,16 @@ services:
       - "3003:3003"
     depends_on:
       - db
+      - ollama
   db:
     image: qdrant/qdrant
     ports:
       - "6333:6333"
+  ollama:
+    volumes:
+      - './ollama:/root/.ollama'
+    image: ollama/ollama
+    ports:
+      - "11434:11434"
+    environment:
+      - 'OLLAMA_ORIGINS=*'
