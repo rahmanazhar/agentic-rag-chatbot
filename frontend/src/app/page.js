@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from 'react';
 import axios from 'axios';
 
@@ -6,7 +8,7 @@ export default function Home() {
     const [response, setResponse] = useState('');
 
     const sendMessage = async () => {
-        const res = await axios.post('http://localhost:5000/chat', { message });
+        const res = await axios.post('http://localhost:3003/chat', { message });
         setResponse(res.data.response);
     };
 
