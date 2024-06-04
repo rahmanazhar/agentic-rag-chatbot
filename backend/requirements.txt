@@ -3,3 +3,5 @@ Flask-CORS
 langchain
 ollama
 qdrant-client
+langchain-community
+sentence-transformers

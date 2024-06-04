@@ -9,8 +9,21 @@ export default function Home() {
     const [response, setResponse] = useState('');
 
     const sendMessage = async () => {
-        const res = await axios.post('http://localhost:3003/chat', { message });
-        setResponse(res.data.response);
+        setResponse(''); // Clear previous response
+        try {
+            const res = await axios.post('http://localhost:3003/chat', { message });
+            const eventSource = new EventSource('http://localhost:3003/chat-stream');
+
+            eventSource.onmessage = (event) => {
+                setResponse((prev) => prev + event.data);
+            };
+
+            eventSource.onerror = () => {
+                eventSource.close();
+            };
+        } catch (error) {
+            console.error("Error sending message:", error);
+        }
     };
 
     return (
