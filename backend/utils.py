@@ -50,12 +50,13 @@ def get_answer(question):
     # Using Ollama to humanize the response
     prompt = {
         "messages": [
-            {"role": "assistant", "content": "Your are a helpful assistant that answer questions about the following context:"},
-            {"role": "user", "content": question},
+            {"role": "assistant", "content": "Here is the answer to your question:"},
             {"role": "system", "content": answer}
         ]
     }
     ollama_response = get_chat_completion_stream(prompt)
 
     return ollama_response['choices'][0]['text']
+
+
 
