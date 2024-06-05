@@ -1,0 +1,8 @@
+OLLAMA_BASE_URL = 'http://localhost:11434'
+MODEL_NAME = 'llama2'
+COLLECTION_NAME = "rag-chatbot"
+QDRANT_HOST = 'localhost'
+QDRANT_PORT = 6333
+EMBEDDING_MODEL_NAME = 'all-MiniLM-L6-v2'
+TEMPERATURE = 1.0
+MAX_TOKENS = 512
