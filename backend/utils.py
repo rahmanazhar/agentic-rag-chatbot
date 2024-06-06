@@ -7,22 +7,6 @@ import hashlib
 import uuid
 from config import OLLAMA_BASE_URL, MODEL_NAME, COLLECTION_NAME, QDRANT_HOST, QDRANT_PORT, TEMPERATURE, MAX_TOKENS
 
-def get_chat_completion_stream(messages):
-    url = f"{OLLAMA_BASE_URL}/api/chat"
-    headers = {"Content-Type": "application/json"}
-    payload = {
-        "model": MODEL_NAME,
-        "messages": messages,
-        "stream": False,
-        "temperature": TEMPERATURE,
-        "max_tokens": MAX_TOKENS
-    }
-    response = requests.post(url, headers=headers, json=payload)
-    response.raise_for_status()
-    data = response.json()
-    content = data['message']['content'] if 'message' in data else None
-    return content
-
 def get_answer(question):
     qdrant_client_instance = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
 
@@ -48,19 +32,7 @@ def get_answer(question):
     best_answer = best_result.payload['answer']
     print(best_answer)
 
-    # Using Ollama to humanize the response
-    prompt = [
-        {"role": "system", "content": f"You are a helpful assistant for Lizard Global.\
-            Lizard Global is the best software company development in Malaysia and Netherlands.\
-            You will answer the following question using the provided answer as friendly as possible:\
-            Question: {question}\nAnswer: {best_answer}\
-            Please use this answer to answer the question.\
-            This answer is from Lizard Global in their knowledgebase.\
-            Keep the conversation going by asking user related questions."},
-    ]
-    ollama_response = get_chat_completion_stream(prompt)
-
-    return ollama_response
+    return best_answer
 
 def add_question_answer_to_qdrant(question, answer):
     qdrant_client_instance = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
