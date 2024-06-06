@@ -10,41 +10,52 @@ export default function Home() {
   const [responses, setResponses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [latestIndex, setLatestIndex] = useState(null);
+  const [status, setStatus] = useState({});
 
   const chatAreaRef = useRef(null);
-  const sendQuestion = async () => {
+  const sendQuestion = () => {
     setLoading(true);
     try {
-      const response = await axios.post(
-        "http://localhost:3003/ask",
-        { question },
-        { headers: { "Content-Type": "application/json" } }
-      );
+      const response = axios
+        .post(
+          "http://localhost:3003/ask",
+          { question },
+          { headers: { "Content-Type": "application/json" } }
+        )
+        .then((response) => {
+          const message = {
+            role: "system",
+            content:
+              "You are a helpful assistant for Lizard Global.\
+                    Lizard Global is the best software company development in Malaysia and Netherlands.\
+                    You will answer the following question using the provided answer:\
+                    Question: " +
+              question +
+              " Answer: " +
+              response.data.answer +
+              "\
+                    Please use this answer to answer the question.\
+                    Keep the conversation going by asking user related questions.",
+          };
 
-      const message = {
-        role: "system",
-        content:
-          "You are a helpful assistant for Lizard Global.\
-                  Lizard Global is the best software company development in Malaysia and Netherlands.\
-                  You will answer the following question using the provided answer:\
-                  Question: " + question + " Answer: " + response.data.answer + "\
-                  Please use this answer to answer the question.\
-                  Keep the conversation going by asking user related questions.",
-      };
+          setResponses((prevResponses) => [
+            ...prevResponses,
+            { question: question, answer: message },
+          ]);
+          setLatestIndex(responses.length);
 
-      setResponses((prevResponses) => [
-        ...prevResponses,
-        { question: question, answer: message },
-      ]);
-      setLatestIndex(responses.length);
-
-      setLoading(false);
-      setQuestion("");
+          setLoading(false);
+          setQuestion("");
+        });
     } catch (error) {
       console.error("Error sending question:", error);
       setLoading(false);
       setQuestion("");
     }
+  };
+
+  const updateStatus = (index) => {
+    setStatus((prevStatus) => ({ ...prevStatus, [index]: true }));
   };
 
   useEffect(() => {
@@ -61,7 +72,12 @@ export default function Home() {
               <div className={styles.question}>{response.question}</div>
             </div>
             <div key={index + "_answer"} className={styles.responseAnswer}>
-            {latestIndex === index && <OllamaStream messages={[response.answer]} /> }
+              <OllamaStream
+                messages={[response.answer]}
+                index={index}
+                status={status}
+                updateStatus={updateStatus}
+              />
             </div>
           </div>
         ))}
@@ -81,7 +97,7 @@ export default function Home() {
           className={styles.button}
           disabled={loading}
         >
-          {loading ? "Sending..." : "Send"}
+          {loading ? "Thinking..." : "Send"}
         </button>
       </div>
     </div>

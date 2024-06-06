@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 
-const OllamaStream = ({ messages }) => {
+const OllamaStream = ({ messages, index, status, updateStatus }) => {
   const [responses, setResponses] = useState("");
 
   const OLLAMA_BASE_URL = "http://localhost:11434";
   const MODEL_NAME = "llama2";
+  
   useEffect(() => {
     const fetchResponses = async () => {
+      console.log("Status", status, index);
+      if (status[index]) return; 
       const url = `${OLLAMA_BASE_URL}/api/chat`;
       const headers = { "Content-Type": "application/json" };
       const payload = {
@@ -28,7 +31,10 @@ const OllamaStream = ({ messages }) => {
         let result = "";
         while (true) {
           const { done, value } = await reader.read();
-          if (done) break;
+          if (done) {
+            updateStatus(index);
+            break;
+          }
           const chunk = new TextDecoder("utf-8").decode(value);
           result += chunk;
           const lines = result.split("\n");
@@ -47,7 +53,7 @@ const OllamaStream = ({ messages }) => {
     };
 
     fetchResponses();
-  }, [messages]);
+  }, []);
 
   return (
     <div>
