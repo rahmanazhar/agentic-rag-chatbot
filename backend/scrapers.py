@@ -23,11 +23,10 @@ def generate_qna(text):
     }
     prompt = (
         "You are an intelligent assistant. Given the following information from a website, "
-        "generate several relevant questions and their corresponding answers. The questions should "
-        "be comprehensive and cover the key points mentioned in the information. Ensure the answers "
-        "are accurate and concise.\n\n"
+        "generate one relevant questions and their corresponding answers. Ensure the answers "
+        "are based on the information given and not more than 100 words.\n\n"
         f"Information: {text}\n\n"
-        "Q&A:"
+        "Write in this format: Question: <question> Answer: <answer>"
     )
     data = {
         'model': MODEL_NAME,
@@ -38,9 +37,15 @@ def generate_qna(text):
     }
     response = requests.post(f"{OLLAMA_BASE_URL}/api/chat", json=data, headers=headers)
     if response.status_code == 200:
-        result = response.json()[0]['message']['content']
-        print(result)
-        return result
+        
+        data = response.json()
+        print(data)
+        if 'message' in data:
+            content = data['message']['content']
+            print(content)
+
+            
+        return content
     else:
         return ""
 
@@ -84,19 +89,19 @@ def generate_id(text):
     return int(hashlib.sha256(text.encode('utf-8')).hexdigest(), 16) % 10**8
 
 def main(urls):
-    print("Starting scraping process...")
     for url in urls:
-        print(f"Scraping website: {url}")
         text = scrape_website(url)
         if text:
-            print("Generating Q&A...")
             qna = generate_qna(text)
             for qa_pair in qna.split('\n\n'):
                 if qa_pair.strip():
-                    question, answer = qa_pair.split('\n')
-                    print(f"Adding question: {question}")
-                    add_question_answer_to_qdrant(question.strip(), answer.strip())
-    print("Scraping process completed.")
+                    lines = qa_pair.split('\n')
+                    for line in lines:
+                        if line.strip().startswith("Question:"):
+                            question = line.replace("Question:", "").strip()
+                        elif line.strip().startswith("Answer:"):
+                            answer = line.replace("Answer:", "").strip()
+                    add_question_answer_to_qdrant(question, answer)
 
 if __name__ == "__main__":
     urls = ["https://www.lizard.global/", "https://www.lizard.global/industries/ecommerce", "https://www.lizard.global/services/workshops"]
