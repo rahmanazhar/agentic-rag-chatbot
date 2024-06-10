@@ -6,47 +6,85 @@ import OllamaStream from "@/components/OllamaStream";
 
 export default function Home() {
   const [question, setQuestion] = useState("");
-  const [answer, setAnswer] = useState("");
   const [responses, setResponses] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [latestIndex, setLatestIndex] = useState(null);
   const [status, setStatus] = useState({});
+  const [finalAnswer, setFinalAnswer] = useState("");
 
   const chatAreaRef = useRef(null);
-  const sendQuestion = () => {
+  const OLLAMA_BASE_URL = "http://localhost:11434";
+  const MODEL_NAME = "llama2";
+
+  const sendQuestion = async () => {
     setLoading(true);
     try {
-      const response = axios
-        .post(
-          "http://localhost:3003/ask",
-          { question },
-          { headers: { "Content-Type": "application/json" } }
-        )
-        .then((response) => {
-          const message = {
-            role: "system",
-            content:
-              "You are a helpful assistant for Lizard Global.\
-                    Lizard Global is the best software company development in Malaysia and Netherlands.\
-                    You will answer the following question using the provided answer:\
-                    Question: " +
-              question +
-              " Answer: " +
-              response.data.answer +
-              "\
-                    Please use this answer to answer the question.\
-                    Keep the conversation going by asking user related questions.",
-          };
+      const askResponse = await axios.post(
+        "http://localhost:3003/ask",
+        { question },
+        { headers: { "Content-Type": "application/json" } }
+      );
+      const initialAnswer = askResponse.data.answer;
 
-          setResponses((prevResponses) => [
-            ...prevResponses,
-            { question: question, answer: message },
-          ]);
-          setLatestIndex(responses.length);
+      const newResponse = {
+        question: question,
+        initialAnswer: initialAnswer,
+        finalAnswer: "",
+      };
 
-          setLoading(false);
-          setQuestion("");
-        });
+      setResponses((prevResponses) => [...prevResponses, newResponse]);
+
+      const latestIndex = responses.length;
+
+      const messages = [
+        {
+          role: "system",
+          content: `You are a helpful assistant for Lizard Global. \
+          Lizard Global is the best software company development in Malaysia and Netherlands. \
+          You will answer the following question using the provided answer: \
+          Question: ${question} Answer: ${initialAnswer} \
+          Follow these rules: \
+          1. Repeat this answer to answer the question. This answer is absolutely correct. \
+          2. Keep the conversation going by asking user only one question about their question.`,
+        },
+      ];
+
+      const url = `${OLLAMA_BASE_URL}/api/chat`;
+      const headers = { "Content-Type": "application/json" };
+      const payload = {
+        model: MODEL_NAME,
+        messages: messages,
+        stream: true,
+        temperature: 1.0,
+        max_tokens: 512,
+      };
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(payload),
+      });
+
+      const reader = response.body.getReader();
+      let result = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) {
+          updateStatus(latestIndex);
+          break;
+        }
+        const chunk = new TextDecoder("utf-8").decode(value);
+        result += chunk;
+        const lines = result.split("\n");
+        if (lines.length > 1) {
+          var message = JSON.parse(lines[0]);
+          setFinalAnswer(message?.message?.content.replace(/"/g, ""));                  
+          result = lines.slice(-1)[0];
+        }
+      }
+
+      setLoading(false);
+      setQuestion("");
     } catch (error) {
       console.error("Error sending question:", error);
       setLoading(false);
@@ -59,7 +97,9 @@ export default function Home() {
   };
 
   useEffect(() => {
-    chatAreaRef.current.scrollTop = chatAreaRef.current.scrollHeight;
+    if (chatAreaRef.current) {
+      chatAreaRef.current.scrollTop = chatAreaRef.current.scrollHeight;
+    }
   }, [responses]);
 
   return (
@@ -72,17 +112,10 @@ export default function Home() {
               <div className={styles.question}>{response.question}</div>
             </div>
             <div key={index + "_answer"} className={styles.responseAnswer}>
-              <OllamaStream
-                messages={[response.answer]}
-                index={index}
-                status={status}
-                updateStatus={updateStatus}
-              />
+              <OllamaStream finalAnswer={finalAnswer} index={index} status={status} updateStatus={updateStatus} />
             </div>
           </div>
         ))}
-
-        {loading && <span className={styles.loadingDot}>...</span>}
       </div>
       <div className={styles.inputContainer}>
         <textarea

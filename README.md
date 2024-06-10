@@ -10,13 +10,13 @@ This project is a retrieval-augmented generation (RAG) chatbot that leverages Qd
 
 1. Create a virtual environment:
     ```bash
-    python -m venv venv
+    python -m venv venv #or python3 -m venv venv
     source venv/bin/activate
     ```
 
 2. Install the required packages:
     ```bash
-    pip install flask flask-cors qdrant-client langchain_community sentence-transformers langchainhub
+    pip install -r requirements.txt
     ```
 
 ### Docker Setup
@@ -28,7 +28,7 @@ This project is a retrieval-augmented generation (RAG) chatbot that leverages Qd
 
 2. Run Ollama:
     ```bash
-    ollama run phi3
+    ollama run llama2
     ```
 
 ## Usage

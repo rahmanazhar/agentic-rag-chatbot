@@ -4,3 +4,7 @@ qdrant-client
 flask-cors
 fastembed
 transformers
+requests
+beautifulsoup4
+torch
+numpy
