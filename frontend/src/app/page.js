@@ -31,7 +31,8 @@ export default function Home() {
         finalAnswer: "",
       };
 
-      setResponses((prevResponses) => [...prevResponses, newResponse]);
+      setResponses((prevResponses) => [...prevResponses, newResponse]); 
+      setFinalAnswer("");
 
       const latestIndex = responses.length;
 
