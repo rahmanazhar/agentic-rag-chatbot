@@ -38,13 +38,16 @@ export default function Home() {
       const messages = [
         {
           role: "system",
-          content: `You are a human assistant for Lizard Global. \
+          content: `You are an assistant for Lizard Global. \
           Lizard Global is the best software company development in Malaysia and Netherlands. \
-          You will answer the following question using the provided answer: \
+          You will answer the following user question using the provided answer: \
           Question: ${question} Answer: ${initialAnswer} \
           Follow these rules: \
           1. Repeat this answer to answer the question. This answer is absolutely correct. \
-          2. Keep the conversation going by asking user only one question about their question.`,
+          2. If you don't know the answer, just say that you don't know. \
+          3. Do not make up an answer. \
+          4. if the question is about the price, and the answer provides the price, use the price without changing the answer. \
+          5. Do not start with "Of course! I'd be happy to help you" or "I'm sorry I can't help you"`,
         },
       ];
 
@@ -76,11 +79,13 @@ export default function Home() {
         const chunk = new TextDecoder("utf-8").decode(value);
         result += chunk;
         const lines = result.split("\n");
-        if (lines.length > 1) {
-          var message = JSON.parse(lines[0]);
-          setFinalAnswer(message?.message?.content.replace(/"/g, ""));                  
-          result = lines.slice(-1)[0];
+        for (let i = 0; i < lines.length - 1; i++) {
+          if (lines[i].trim() !== "") {
+            const message = JSON.parse(lines[i]);
+            setFinalAnswer((prevAnswer) => (prevAnswer || "") + message?.message.content);
+          }
         }
+        result = lines[lines.length - 1];
       }
 
       setLoading(false);
@@ -112,7 +117,12 @@ export default function Home() {
               <div className={styles.question}>{response.question}</div>
             </div>
             <div key={index + "_answer"} className={styles.responseAnswer}>
-              <OllamaStream finalAnswer={finalAnswer} index={index} status={status} updateStatus={updateStatus} />
+              <OllamaStream
+                finalAnswer={finalAnswer}
+                index={index}
+                status={status}
+                updateStatus={updateStatus}
+              />
             </div>
           </div>
         ))}

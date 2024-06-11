@@ -6,7 +6,7 @@ const OllamaStream = ({ finalAnswer, index, status, updateStatus }) => {
 
   React.useEffect(() => {
     if (finalAnswer && !status[index]) {
-      setMessages((prevMessages) => [...prevMessages, finalAnswer]);
+      setMessages(finalAnswer);
     }
     if (status[index]) {
       updateStatus(index);
