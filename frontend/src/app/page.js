@@ -46,7 +46,7 @@ export default function Home() {
           1. Repeat this answer to answer the question. This answer is absolutely correct. \
           2. If you don't know the answer, just say that you don't know. \
           3. Do not make up an answer. \
-          4. if the question is about the price, and the answer provides the price, use the price without changing the answer. \
+          4. if the question is about the price, use the price answer without changing the answer. \
           5. Do not start with "Of course! I'd be happy to help you" or "I'm sorry I can't help you"`,
         },
       ];
