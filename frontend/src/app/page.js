@@ -106,7 +106,7 @@ export default function Home() {
     if (chatAreaRef.current) {
       chatAreaRef.current.scrollTop = chatAreaRef.current.scrollHeight;
     }
-  }, [responses]);
+  }, [responses, finalAnswer]);
 
   return (
     <div className={styles.container}>
