@@ -86,3 +86,7 @@ backend/
     "response": "Humanized response from the chatbot"
   }
   ```
+## Website scrapers for QnA Generation
+
+1. Modify urls in `scrapers.py`
+2. Run `python scrapers.py`

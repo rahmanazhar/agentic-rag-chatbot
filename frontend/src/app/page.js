@@ -38,7 +38,7 @@ export default function Home() {
       const messages = [
         {
           role: "system",
-          content: `You are a helpful assistant for Lizard Global. \
+          content: `You are a human assistant for Lizard Global. \
           Lizard Global is the best software company development in Malaysia and Netherlands. \
           You will answer the following question using the provided answer: \
           Question: ${question} Answer: ${initialAnswer} \
