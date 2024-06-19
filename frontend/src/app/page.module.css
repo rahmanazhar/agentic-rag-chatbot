@@ -59,7 +59,7 @@
   padding: 10px;
   margin-bottom: 10px;
   border-radius: 5px;
-  background-color: #e7f3ff;
+  /* background-color: #e7f3ff; */
 }
 
 .response {
@@ -67,7 +67,7 @@
   align-self: self-start;
   width: 40%;
   border-radius: 5px;
-  background-color: #e7f3ff;
+  /* background-color: #e7f3ff; */
 }
 
 .responseAnswer {
@@ -77,7 +77,7 @@
   width: 60%;
   margin-top: 30px;
   border-radius: 5px;
-  background-color: #e7f3ff;
+  /* background-color: #ccc; */
 }
 
 
@@ -105,4 +105,38 @@
   0% { opacity: 0.2; }
   50% { opacity: 1; }
   100% { opacity: 0.2; }
+}
+
+.questionsBox{
+  display: flex;
+  align-items: center;
+  position: sticky;
+  bottom: 0;
+  text-align: center;
+  /* background-color: #fff; */
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.questionButton{
+  width: 25%;
+  height: 100px;
+  padding: 8px 16px;
+  font-size: 16px;
+  background-color: #000;
+  color: #fff;
+  border-radius: 5px;
+  margin: 0 5px;
+}
+
+.questionButtons{
+  display: flex;
+  margin-top: 10px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+.questionText{
+  text-align: center;
 }

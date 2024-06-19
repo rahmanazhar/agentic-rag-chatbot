@@ -8,3 +8,4 @@ EMBEDDING_MODEL_NAME = 'all-MiniLM-L6-v2'
 TEMPERATURE = 1.0
 MAX_TOKENS = -1
 SENTENCE_TRANSFORMER_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+PIPELINE_MODEL = "distilbert-base-cased-distilled-squad"

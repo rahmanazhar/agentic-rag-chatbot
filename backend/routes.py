@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from utils import get_answer, add_question_answer_to_qdrant
+from utils import get_answer, add_question_answer_to_qdrant, get_random_questions_from_collection
 
 main_routes = Blueprint('main_routes', __name__)
 
@@ -24,3 +24,9 @@ def add_qa():
 
     add_question_answer_to_qdrant(question, answer)
     return jsonify({'message': 'Question and answer added successfully'}), 201
+
+
+@main_routes.route('/getQuestions', methods=['GET'])
+def get_questions():
+    random_questions = get_random_questions_from_collection()
+    return jsonify({'questions': random_questions}), 201

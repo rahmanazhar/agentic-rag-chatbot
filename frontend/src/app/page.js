@@ -10,6 +10,10 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState({});
   const [finalAnswer, setFinalAnswer] = useState("");
+  const [chatHistory, setChatHistory] = useState([]);
+  const [randomQuestions, setRandomQuestions] = useState([]);
+
+  let predefinedQuestions = "";
 
   const chatAreaRef = useRef(null);
   const OLLAMA_BASE_URL = "http://localhost:11434";
@@ -17,40 +21,50 @@ export default function Home() {
 
   const sendQuestion = async () => {
     setLoading(true);
+    const query = question ? question : predefinedQuestions;
     try {
       const askResponse = await axios.post(
         "http://localhost:3003/ask",
-        { question },
+        { question: query },
         { headers: { "Content-Type": "application/json" } }
       );
       const initialAnswer = askResponse.data.answer;
 
       const newResponse = {
-        question: question,
+        question: query,
         initialAnswer: initialAnswer,
         finalAnswer: "",
       };
 
-      setResponses((prevResponses) => [...prevResponses, newResponse]); 
-      setFinalAnswer("");
+      setChatHistory((prevHistory) => [...prevHistory, query]);
+      setResponses((prevResponses) => [...prevResponses, newResponse]);
 
       const latestIndex = responses.length;
 
       const messages = [
+        ...(chatHistory.map((chat) => ({
+          role: "system",
+          content: `[INST]<Previous conversation>This is your previous conversation with the user. \
+            User has asked "${chat}" and you answered "${finalAnswer}".</Previous conversation>[/INST]`,
+        }))),
         {
           role: "system",
-          content: `You are an assistant for Lizard Global. \
-          Lizard Global is the best software company development in Malaysia and Netherlands. \
-          You will answer the following user question using the provided answer: \
-          Question: ${question} Answer: ${initialAnswer} \
-          Follow these rules: \
-          1. Repeat this answer to answer the question. This answer is absolutely correct. \
-          2. If you don't know the answer, just say that you don't know. \
-          3. Do not make up an answer. \
-          4. if the question is about the price, use the price answer without changing the answer. \
-          5. Do not start with "Of course! I'd be happy to help you" or "I'm sorry I can't help you"`,
-        },
+          content: `[INST]You are an intelligent assistant. \
+          Do not give long answers. \
+          Do not make up an answer. \
+          Do not start with unnecessary greetings or introductions. \
+          You will only use the <Previous conversation> to enhance your answer . \
+          You will answer the following question using the provided answer: \
+          User question: ${query}. 
+          Provided answer: ${initialAnswer}.
+          At the end of your answer, ask the user if they have any more questions. \
+          [/INST]`,
+        }
       ];
+
+      console.log("messages", messages);
+
+      setFinalAnswer("");
 
       const url = `${OLLAMA_BASE_URL}/api/chat`;
       const headers = { "Content-Type": "application/json" };
@@ -83,7 +97,9 @@ export default function Home() {
         for (let i = 0; i < lines.length - 1; i++) {
           if (lines[i].trim() !== "") {
             const message = JSON.parse(lines[i]);
-            setFinalAnswer((prevAnswer) => (prevAnswer || "") + message?.message.content);
+            setFinalAnswer(
+              (prevAnswer) => (prevAnswer || "") + message?.message.content
+            );
           }
         }
         result = lines[lines.length - 1];
@@ -91,10 +107,12 @@ export default function Home() {
 
       setLoading(false);
       setQuestion("");
+      predefinedQuestions = "";
     } catch (error) {
       console.error("Error sending question:", error);
       setLoading(false);
       setQuestion("");
+      predefinedQuestions = "";
     }
   };
 
@@ -102,15 +120,52 @@ export default function Home() {
     setStatus((prevStatus) => ({ ...prevStatus, [index]: true }));
   };
 
+  const fetchRandomQuestions = async () => {
+    try {
+      const response = await axios.get("http://localhost:3003/getQuestions");
+      setRandomQuestions(response.data.questions);
+    } catch (error) {
+      console.error("Error fetching random questions:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchRandomQuestions();
+  }, [loading]);
+
   useEffect(() => {
     if (chatAreaRef.current) {
       chatAreaRef.current.scrollTop = chatAreaRef.current.scrollHeight;
     }
   }, [responses, finalAnswer]);
 
+  const click_and_chat = (question) => {
+    if (loading) return;
+    predefinedQuestions = question;
+    sendQuestion();
+  };
+
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>Agentic RAG Chatbot</h1>
+      <h1 className={styles.title}>Lizard Global Chatbot</h1>
+      <div className={styles.questionsBox}>
+        <p className={styles.questionText}>
+          Not sure what to ask? You can pick a question here:
+        </p>
+
+        <div className={styles.questionButtons}>
+            {randomQuestions &&
+              randomQuestions.map((randomQuestion, index) => (
+                <button
+                  key={index}
+                  onClick={() => click_and_chat(randomQuestion)}
+                  className={styles.questionButton}
+                >
+                  {randomQuestion}
+                </button>
+              ))}
+          </div>
+      </div>
       <div ref={chatAreaRef} className={styles.responses}>
         {responses.map((response, index) => (
           <div key={index} className={styles.responseDiv}>
